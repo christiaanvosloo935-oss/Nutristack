@@ -1,7 +1,7 @@
 import type { createFridge } from "../fridge";
 import { QUICK_ADD, suggest } from "../ingredients/vocabulary";
 import { normalizeIngredient } from "../ingredients/normalize";
-import { h } from "./dom";
+import { claimRoot, h } from "./dom";
 
 export interface IngredientsDeps {
   fridge: ReturnType<typeof createFridge>;
@@ -9,7 +9,14 @@ export interface IngredientsDeps {
   onFind: () => void;
 }
 
-export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab, onFind }: IngredientsDeps): void {
+export interface IngredientsScreen {
+  /** Swap in the autocomplete vocabulary without rebuilding the screen (keeps typed text and focus). */
+  setVocab(next: string[]): void;
+}
+
+export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab: initialVocab, onFind }: IngredientsDeps): IngredientsScreen {
+  const isCurrent = claimRoot(root);
+  let vocab = initialVocab;
   const input = h("input", {
     type: "search",
     placeholder: "Add a food, e.g. eggs",
@@ -89,4 +96,12 @@ export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab, onFi
     h("div", { class: "bottom-bar" }, find),
   );
   refresh();
+
+  return {
+    setVocab(next) {
+      if (!isCurrent()) return;
+      vocab = next;
+      refresh();
+    },
+  };
 }

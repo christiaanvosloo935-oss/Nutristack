@@ -5,10 +5,10 @@ import { LibraryUnavailableError, loadLibrary } from "../library";
 import { createIdbCache } from "../library/cache";
 import { fetchAllMeals } from "../library/mealdb";
 import type { Recipe } from "../types";
-import { h } from "./dom";
+import { claimRoot, h } from "./dom";
 import { matchOne } from "../matcher";
 import { renderDetailScreen } from "./detailScreen";
-import { renderIngredientsScreen } from "./ingredientsScreen";
+import { renderIngredientsScreen, type IngredientsScreen } from "./ingredientsScreen";
 import { renderResultsScreen } from "./resultsScreen";
 import { startRouter } from "./router";
 
@@ -23,17 +23,17 @@ export function startApp(root: HTMLElement): void {
   let library: Promise<Library> = startLoad();
   let vocab: string[] = [];
 
-  const onHome = () => window.location.hash === "" || window.location.hash === "#/";
+  let home: IngredientsScreen | null = null;
 
   const showHome = () => {
-    renderIngredientsScreen(root, { fridge, vocab, onFind: () => (window.location.hash = "#/results") });
+    home = renderIngredientsScreen(root, { fridge, vocab, onFind: () => (window.location.hash = "#/results") });
   };
 
   const watchLibrary = () =>
     library
       .then((result) => {
         vocab = buildVocabulary(result.recipes);
-        if (onHome()) showHome();
+        home?.setVocab(vocab);
       })
       .catch(() => undefined);
   void watchLibrary();
@@ -64,26 +64,30 @@ export function startApp(root: HTMLElement): void {
   };
 
   const showResults = () => {
+    const isCurrent = claimRoot(root);
     root.replaceChildren(h("main", { class: "screen" }, h("p", { class: "hint" }, "Loading recipes…")));
     library
-      .then(({ recipes, stale }) =>
+      .then(({ recipes, stale }) => {
+        if (!isCurrent()) return;
         renderResultsScreen(root, {
           fridge: fridge.list(),
           recipes,
           stale,
           fetchAi: (ingredients) => fetchAiRecipes(ingredients),
           onOpen: (id) => (window.location.hash = `#/recipe/${id}`),
-        }),
-      )
+        });
+      })
       .catch((error: unknown) => {
         if (!(error instanceof LibraryUnavailableError)) console.error(error);
-        showError();
+        if (isCurrent()) showError();
       });
   };
 
   const showRecipe = ([id]: string[]) => {
+    const isCurrent = claimRoot(root);
     library
       .then(({ recipes }) => {
+        if (!isCurrent()) return;
         const recipe = recipes.find((r) => r.id === id);
         if (!recipe) {
           window.location.hash = "#/results";
@@ -92,7 +96,9 @@ export function startApp(root: HTMLElement): void {
         renderDetailScreen(root, matchOne(fridge.list(), recipe), () => window.history.back());
         window.scrollTo(0, 0);
       })
-      .catch(showError);
+      .catch(() => {
+        if (isCurrent()) showError();
+      });
   };
 
   startRouter({ "": showHome, results: showResults, recipe: showRecipe });

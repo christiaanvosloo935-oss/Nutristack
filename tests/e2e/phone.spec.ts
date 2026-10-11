@@ -35,9 +35,10 @@ const aiRecipes = [1, 2, 3].map((n) => ({
   steps: ["Cook it."],
 }));
 
-async function mockNetwork(page: Page, { libraryFails = false } = {}) {
-  await page.route("https://www.themealdb.com/api/json/v1/1/search.php?f=*", (route) => {
+async function mockNetwork(page: Page, { libraryFails = false, libraryDelayMs = 0 } = {}) {
+  await page.route("https://www.themealdb.com/api/json/v1/1/search.php?f=*", async (route) => {
     if (libraryFails) return route.abort();
+    if (libraryDelayMs) await new Promise((r) => setTimeout(r, libraryDelayMs));
     const letter = new URL(route.request().url()).searchParams.get("f");
     return route.fulfill({ json: { meals: letter === "a" ? meals : null } });
   });
@@ -97,4 +98,25 @@ test("offline on first launch shows a clear retry screen", async ({ page }) => {
   await page.locator("button.find").click();
   await expect(page.getByRole("heading", { name: "Can't load recipes" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
+});
+
+test("typing is not wiped when the library finishes loading", async ({ page }) => {
+  await mockNetwork(page, { libraryDelayMs: 1500 });
+  await page.goto("/");
+  await page.getByLabel("Add an ingredient").fill("che");
+  await expect(page.locator(".suggestions button").first()).toBeVisible({ timeout: 6000 });
+  await expect(page.getByLabel("Add an ingredient")).toHaveValue("che");
+  await expect(page.locator(".suggestions button").first()).toHaveText("cheese");
+});
+
+test("a slow library does not cover the home screen after the user went back", async ({ page }) => {
+  await mockNetwork(page, { libraryDelayMs: 1500 });
+  await page.goto("/");
+  await page.locator(".quick-add button", { hasText: /^eggs$/ }).click();
+  await page.locator("button.find").click();
+  await expect(page.getByText("Loading recipes")).toBeVisible();
+  await page.goBack();
+  await page.waitForTimeout(2500);
+  await expect(page.getByRole("heading", { name: "What's in your fridge?" })).toBeVisible();
+  await expect(page.locator(".grid .card")).toHaveCount(0);
 });

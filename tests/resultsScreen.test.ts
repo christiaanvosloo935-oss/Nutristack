@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { AiQuotaError, AiUnavailableError } from "../shared/aiRecipes";
+import { claimRoot } from "../src/ui/dom";
 import { renderResultsScreen } from "../src/ui/resultsScreen";
 import type { AiRecipe } from "../src/types";
 import { chickenRice, omelette, tomatoPasta } from "./fixtures/recipes";
@@ -125,5 +126,17 @@ describe("AI section", () => {
     mount();
     click(".ai-suggest");
     await vi.waitFor(() => expect(root.querySelector(".ai-error")!.textContent).toContain("unavailable"));
+  });
+
+  test("a late AI answer does not overwrite a screen the user has moved to", async () => {
+    let resolve!: (r: AiRecipe[]) => void;
+    fetchAi.mockImplementationOnce(() => new Promise<AiRecipe[]>((r) => (resolve = r)));
+    mount();
+    click(".ai-suggest");
+    claimRoot(root);
+    root.replaceChildren("OTHER SCREEN");
+    resolve(aiRecipes);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(root.textContent).toBe("OTHER SCREEN");
   });
 });

@@ -18,3 +18,15 @@ export function h<K extends keyof HTMLElementTagNameMap>(
   }
   return node;
 }
+
+const claims = new WeakMap<HTMLElement, number>();
+
+/**
+ * Mark `root` as owned by the screen being rendered. The returned function reports whether
+ * that screen is still the one showing, so late async work can drop its render if the user moved on.
+ */
+export function claimRoot(root: HTMLElement): () => boolean {
+  const claim = (claims.get(root) ?? 0) + 1;
+  claims.set(root, claim);
+  return () => claims.get(root) === claim;
+}

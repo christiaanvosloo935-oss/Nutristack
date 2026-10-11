@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { createFridge } from "../src/fridge";
+import { claimRoot } from "../src/ui/dom";
 import { renderIngredientsScreen } from "../src/ui/ingredientsScreen";
 import { startRouter } from "../src/ui/router";
 
@@ -14,9 +15,11 @@ let onFind: ReturnType<typeof vi.fn<() => void>>;
 
 const vocab = ["chicken", "chickpea", "rice", "stir-fried chili"];
 
-function mount() {
+let screen: ReturnType<typeof renderIngredientsScreen>;
+
+function mount(initialVocab = vocab) {
   root.innerHTML = "";
-  renderIngredientsScreen(root, { fridge, vocab, onFind });
+  screen = renderIngredientsScreen(root, { fridge, vocab: initialVocab, onFind });
 }
 const input = () => root.querySelector<HTMLInputElement>("input[type=search]")!;
 const chips = () => [...root.querySelectorAll(".chips .chip")].map((c) => c.firstChild?.textContent);
@@ -90,6 +93,27 @@ describe("ingredients screen", () => {
     type("<img src=x onerror=alert(1)>");
     submit();
     expect(root.querySelector(".chips img")).toBeNull();
+  });
+});
+
+describe("setVocab", () => {
+  test("updates suggestions without rebuilding the input or losing typed text", () => {
+    mount([]);
+    const before = input();
+    type("ch");
+    expect(root.querySelectorAll(".suggestions button")).toHaveLength(0);
+    screen.setVocab(["chicken"]);
+    expect(input()).toBe(before);
+    expect(input().value).toBe("ch");
+    expect([...root.querySelectorAll(".suggestions button")].map((b) => b.textContent)).toEqual(["chicken"]);
+  });
+
+  test("does nothing once another screen has taken over the root", () => {
+    mount([]);
+    claimRoot(root);
+    root.replaceChildren("OTHER SCREEN");
+    screen.setVocab(["chicken"]);
+    expect(root.textContent).toBe("OTHER SCREEN");
   });
 });
 

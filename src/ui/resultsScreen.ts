@@ -1,7 +1,7 @@
 import { AiQuotaError } from "../../shared/aiRecipes";
 import { matchRecipes } from "../matcher";
 import type { AiRecipe, Match, Recipe } from "../types";
-import { h } from "./dom";
+import { claimRoot, h } from "./dom";
 
 export interface ResultsDeps {
   fridge: string[];
@@ -52,6 +52,7 @@ function aiCard(r: AiRecipe): HTMLElement {
 
 export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void {
   const { fridge, recipes, stale, fetchAi, onOpen } = deps;
+  const isCurrent = claimRoot(root);
   const matches = matchRecipes(fridge, recipes);
   const categories = [...new Set(matches.map((m) => m.recipe.category).filter(Boolean))].sort();
 
@@ -73,6 +74,7 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
           ? "Free AI limit reached for today, try again tomorrow."
           : "AI suggestions are unavailable right now.";
     }
+    if (!isCurrent()) return;
     aiLoading = false;
     render();
   }
@@ -108,6 +110,7 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
   }
 
   function render(): void {
+    if (!isCurrent()) return;
     const back = h("a", { class: "back", href: "#/" }, "← Edit ingredients");
 
     if (fridge.length === 0) {
