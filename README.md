@@ -43,7 +43,7 @@ The app is one Cloudflare Worker: it serves the built site from `dist/` and hand
 1. Push this repo to GitHub, then in Cloudflare: Workers & Pages -> Create -> import the Git repository.
 2. Build settings: build command `npm run build`, deploy command `npx wrangler deploy`, root directory `/`. Set the production branch to the branch you deploy from.
 3. **Create the Gemini key safely:** at <https://aistudio.google.com/apikey> create the key in a **new project that has no billing account attached**. Check that AI Studio shows the project on the **Free tier**. A key from a Google Cloud project with billing turned on is charged at paid rates, and nothing in this app can stop that.
-4. In the project: Settings -> Variables and Secrets -> Add -> type **Secret**, name `GEMINI_API_KEY`, paste the key, then deploy again so it takes effect. Optional: `GEMINI_MODEL` (default `gemini-2.5-flash`).
+4. In the project: Settings -> Variables and Secrets -> Add -> type **Secret**, name `GEMINI_API_KEY`, paste the key, then deploy again so it takes effect. Optional: `GEMINI_MODEL` (default `gemini-flash-lite-latest`).
 5. Open the `*.workers.dev` address on a phone and use "Add to Home Screen".
 
 Everything here uses free plans with hard limits and no card on file. If a limit is hit the feature pauses (the AI section says "try again tomorrow"). This holds as long as the Gemini key comes from a project without billing (step 3).

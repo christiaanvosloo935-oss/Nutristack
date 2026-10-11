@@ -49,6 +49,15 @@ describe("handleAiRecipes", () => {
     expect(await res.text()).not.toContain("upstream");
   });
 
+  test("defaults to the Flash-Lite alias, which Google keeps pointing at a live model", async () => {
+    let url = "";
+    await handleAiRecipes(post({ ingredients: ["egg"] }), env, async (u) => {
+      url = String(u);
+      return geminiOk();
+    });
+    expect(url).toContain("/models/gemini-flash-lite-latest:generateContent");
+  });
+
   test("uses GEMINI_MODEL when set", async () => {
     let url = "";
     await handleAiRecipes(post({ ingredients: ["egg"] }), { ...env, GEMINI_MODEL: "my-model" }, async (u) => {

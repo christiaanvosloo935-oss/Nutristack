@@ -1,6 +1,7 @@
 import type { AiRecipe } from "../src/types";
 
-export const DEFAULT_MODEL = "gemini-2.5-flash";
+// An alias, not a pinned name: pinned models get retired (gemini-2.5-flash now returns 404 for new users).
+export const DEFAULT_MODEL = "gemini-flash-lite-latest";
 const MAX_INGREDIENTS = 15;
 const MAX_INGREDIENT_LENGTH = 40;
 const MAX_RECIPES = 3;
