@@ -126,14 +126,17 @@ export interface CallGeminiOptions {
   model: string;
   ingredients: string[];
   fetchFn?: typeof fetch;
+  /** Give up on a stalled Gemini call (default 20 s) so the app shows an error instead of hanging. */
+  timeoutMs?: number;
 }
 
-export async function callGemini({ apiKey, model, ingredients, fetchFn = fetch }: CallGeminiOptions): Promise<AiRecipe[]> {
+export async function callGemini({ apiKey, model, ingredients, fetchFn = fetch, timeoutMs = 20_000 }: CallGeminiOptions): Promise<AiRecipe[]> {
   let response: Response;
   try {
     response = await fetchFn(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+      signal: AbortSignal.timeout(timeoutMs),
       body: JSON.stringify({
         contents: [{ parts: [{ text: buildPrompt(ingredients) }] }],
         generationConfig: { responseMimeType: "application/json", responseSchema: RESPONSE_SCHEMA },

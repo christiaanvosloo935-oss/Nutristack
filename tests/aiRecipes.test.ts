@@ -113,6 +113,16 @@ describe("callGemini", () => {
     ).rejects.toBeInstanceOf(AiUnavailableError);
   });
 
+  test("a call that never answers is cut off and becomes AiUnavailableError", async () => {
+    const hangs = ((_url: string, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+      })) as unknown as typeof fetch;
+    const started = Date.now();
+    await expect(callGemini({ ...base, fetchFn: hangs, timeoutMs: 30 })).rejects.toBeInstanceOf(AiUnavailableError);
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
+
   test("malformed model output becomes AiUnavailableError", async () => {
     await expect(callGemini({ ...base, fetchFn: (async () => ok("garbage")) as unknown as typeof fetch })).rejects.toBeInstanceOf(AiUnavailableError);
   });
