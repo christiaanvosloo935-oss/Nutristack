@@ -4,6 +4,7 @@ import { buildVocabulary } from "../ingredients/vocabulary";
 import { LibraryUnavailableError, loadLibrary } from "../library";
 import { createIdbCache } from "../library/cache";
 import { fetchAllMeals } from "../library/mealdb";
+import type { EffortLevel } from "../effort";
 import type { Recipe } from "../types";
 import { claimRoot, h } from "./dom";
 import { matchOne } from "../matcher";
@@ -24,6 +25,7 @@ export function startApp(root: HTMLElement): void {
   let vocab: string[] = [];
 
   let home: IngredientsScreen | null = null;
+  let lastLevel: EffortLevel | undefined;
 
   const showHome = () => {
     home = renderIngredientsScreen(root, { fridge, vocab, onFind: () => (window.location.hash = "#/results") });
@@ -75,6 +77,8 @@ export function startApp(root: HTMLElement): void {
           stale,
           fetchAi: (ingredients) => fetchAiRecipes(ingredients),
           onOpen: (id) => (window.location.hash = `#/recipe/${id}`),
+          initialLevel: lastLevel,
+          onLevelChange: (level) => (lastLevel = level),
         });
       })
       .catch((error: unknown) => {

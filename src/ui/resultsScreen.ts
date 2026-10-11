@@ -1,5 +1,5 @@
 import { AiQuotaError } from "../../shared/aiRecipes";
-import { EFFORT_LEVELS, estimateEffort, formatMinutes, groupByEffort } from "../effort";
+import { EFFORT_LEVELS, estimateEffort, formatMinutes, groupByEffort, pickLevel, type EffortLevel } from "../effort";
 import { matchRecipes } from "../matcher";
 import type { AiRecipe, Match, Recipe } from "../types";
 import { claimRoot, h } from "./dom";
@@ -10,6 +10,9 @@ export interface ResultsDeps {
   stale: boolean;
   fetchAi: (ingredients: string[]) => Promise<AiRecipe[]>;
   onOpen: (id: string) => void;
+  /** Level to open on (e.g. the one the user was on before opening a recipe). */
+  initialLevel?: EffortLevel;
+  onLevelChange?: (level: EffortLevel) => void;
 }
 
 type Filter = "all" | "ready" | "missing";
@@ -63,13 +66,14 @@ function aiCard(r: AiRecipe): HTMLElement {
 }
 
 export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void {
-  const { fridge, recipes, stale, fetchAi, onOpen } = deps;
+  const { fridge, recipes, stale, fetchAi, onOpen, onLevelChange } = deps;
   const isCurrent = claimRoot(root);
   const matches = matchRecipes(fridge, recipes);
   const categories = [...new Set(matches.map((m) => m.recipe.category).filter(Boolean))].sort();
 
   let filter: Filter = "all";
   let category: string | null = null;
+  let level: EffortLevel | null = deps.initialLevel ?? null;
   let aiCards: AiRecipe[] = [];
   let aiLoading = false;
   let aiError = "";
@@ -121,6 +125,51 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
     );
   }
 
+  function levelCounts(): Record<EffortLevel, number> {
+    const counts: Record<EffortLevel, number> = { quick: 0, medium: 0, long: 0 };
+    for (const group of groupByEffort(visible())) counts[group.level] = group.matches.length;
+    return counts;
+  }
+
+  function tabBar(): HTMLElement {
+    const counts = levelCounts();
+    level = pickLevel(level, counts);
+    return h(
+      "div",
+      { class: "tabs", role: "tablist" },
+      ...EFFORT_LEVELS.map(({ level: id, emoji, title }) =>
+        h(
+          "button",
+          {
+            class: "tab",
+            type: "button",
+            role: "tab",
+            "aria-selected": String(level === id),
+            disabled: counts[id] === 0,
+            onclick: () => {
+              level = id;
+              onLevelChange?.(id);
+              render();
+            },
+          },
+          `${emoji} ${title} · ${counts[id]}`,
+        ),
+      ),
+    );
+  }
+
+  function tabPanel(): HTMLElement | false {
+    const shown = groupByEffort(visible()).find((g) => g.level === level);
+    if (!shown) return h("p", { class: "empty" }, "Nothing matches these filters.");
+    const range = EFFORT_LEVELS.find((l) => l.level === shown.level)!.range;
+    return h(
+      "div",
+      { class: "level-panel", role: "tabpanel" },
+      h("p", { class: "level-range" }, range.charAt(0).toUpperCase() + range.slice(1)),
+      h("div", { class: "grid" }, ...shown.matches.map((m) => matchCard(m, onOpen))),
+    );
+  }
+
   function render(): void {
     if (!isCurrent()) return;
     const back = h("a", { class: "back", href: "#/" }, "← Edit ingredients");
@@ -140,6 +189,7 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
         back,
         h("h1", {}, "Recipes you can make"),
         stale && h("p", { class: "notice" }, "You're offline, showing saved recipes."),
+        matches.length > 0 && tabBar(),
         matches.length > 0 &&
           h(
             "div",
@@ -160,19 +210,7 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
           ? h("p", { class: "empty" }, "No recipes match yet. Add more food, or try the AI ideas below.")
           : list.length === 0
             ? h("p", { class: "empty" }, "Nothing matches these filters.")
-            : h(
-                "div",
-                { class: "levels" },
-                ...groupByEffort(list).map(({ level, matches: group }) => {
-                  const meta = EFFORT_LEVELS.find((l) => l.level === level)!;
-                  return h(
-                    "section",
-                    { class: "level-group" },
-                    h("h2", { class: "level-title" }, `${meta.emoji} ${meta.title} · ${meta.range}`),
-                    h("div", { class: "grid" }, ...group.map((m) => matchCard(m, onOpen))),
-                  );
-                }),
-              ),
+            : tabPanel(),
         aiSection(),
       ),
     );

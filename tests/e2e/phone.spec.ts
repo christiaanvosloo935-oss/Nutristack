@@ -69,11 +69,16 @@ test("add food, find recipes, open one, and get AI ideas", async ({ page }) => {
   await expect(firstCard.locator("img")).toHaveAttribute("src", /test-1\.jpg/);
   await expect(firstCard.locator(".badge")).toHaveText("2/2 ingredients");
   await expect(firstCard.locator(".time")).toContainText("min");
-  await expect(page.locator(".level-title").first()).toContainText("Quick");
-  await expect(page.locator(".level-title").last()).toContainText("Long");
+  await expect(page.locator(".tab[aria-selected='true']")).toContainText("Quick");
+  await expect(page.locator(".tab").nth(1)).toBeDisabled();
   await page.screenshot({ path: "docs/screenshots/2-results.png", fullPage: true });
   await noHorizontalScroll(page);
 
+  await page.locator(".tab", { hasText: "Long" }).click();
+  await expect(page.locator(".grid .card")).toHaveCount(1);
+  await expect(page.locator(".grid .card .card-title")).toHaveText("Slow Tomato Bake");
+  await page.screenshot({ path: "docs/screenshots/2b-results-long.png", fullPage: true });
+  await page.locator(".tab", { hasText: "Quick" }).click();
   await firstCard.click();
   await expect(page.getByRole("heading", { name: "Cheese Omelette" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "You'll also need" })).toBeVisible();
@@ -82,6 +87,7 @@ test("add food, find recipes, open one, and get AI ideas", async ({ page }) => {
 
   await page.locator("button.back").click();
   await expect(page.locator(".grid .card").first()).toBeVisible();
+  await expect(page.locator(".tab[aria-selected='true']")).toContainText("Quick");
   await page.locator(".ai-suggest").click();
   await expect(page.locator(".ai-card")).toHaveCount(3);
   await expect(page.locator(".ai-label").first()).toHaveText("AI suggestion, not kitchen-tested");

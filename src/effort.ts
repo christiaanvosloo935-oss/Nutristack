@@ -72,3 +72,11 @@ export function groupByEffort(matches: Match[]): Array<{ level: EffortLevel; mat
   }
   return EFFORT_LEVELS.filter(({ level }) => groups.has(level)).map(({ level }) => ({ level, matches: groups.get(level)! }));
 }
+
+/** The level to show: the preferred one if it has recipes, else the nearest level that does (quicker wins ties). */
+export function pickLevel(preferred: EffortLevel | null, counts: Record<EffortLevel, number>): EffortLevel | null {
+  const order = EFFORT_LEVELS.map((l) => l.level);
+  const start = preferred === null ? 0 : order.indexOf(preferred);
+  const byDistance = [...order].sort((a, b) => Math.abs(order.indexOf(a) - start) - Math.abs(order.indexOf(b) - start) || order.indexOf(a) - order.indexOf(b));
+  return byDistance.find((level) => counts[level] > 0) ?? null;
+}

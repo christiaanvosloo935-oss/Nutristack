@@ -295,8 +295,34 @@ button.find:disabled { opacity: 0.5; cursor: default; }
 .detail .source { display: inline-flex; align-items: center; min-height: 44px; margin-top: 18px; color: var(--sage-strong); font-weight: 500; }
 
 /* Effort levels */
-.level-group { margin-top: 6px; }
-.level-title { margin: 22px 2px 4px; }
+.tabs {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 10px 0 6px;
+  padding: 6px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.tab {
+  min-height: 48px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.tab[aria-selected="true"] { background: var(--sage-strong); color: var(--on-color); }
+.tab:disabled { opacity: 0.4; cursor: default; }
+.level-range { margin: 10px 4px 0; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .time { font-size: 0.78rem; color: var(--muted); }
 .ai-time { font-size: 0.78rem; color: var(--taupe); }

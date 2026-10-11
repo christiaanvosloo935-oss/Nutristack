@@ -87,17 +87,54 @@ describe("real recipes", () => {
   });
 });
 
-describe("effort levels", () => {
+describe("effort tabs", () => {
   const slowOmelette = { ...omelette, id: "11", name: "Slow Omelette", instructions: "Cook gently for 3 hours." };
   const slowStew = { ...tomatoPasta, id: "12", name: "Slow Pasta", instructions: "Simmer for 3 hours." };
+  const tab = (text: string) => [...root.querySelectorAll<HTMLButtonElement>(".tabs button.tab")].find((b) => b.textContent!.includes(text))!;
+  const tabLabels = () => [...root.querySelectorAll(".tabs button.tab")].map((b) => b.textContent);
+  const selectedTab = () => root.querySelector(".tabs button.tab[aria-selected='true']")?.textContent;
 
-  test("groups cards under Quick / Medium / Long headings, quickest first, empty levels hidden", () => {
+  test("shows Quick / Medium / Long tabs with counts, opening on the quickest level with recipes", () => {
     mount({ recipes: [slowOmelette, omelette, chickenRice] });
-    const titles = [...root.querySelectorAll(".level-title")].map((t) => t.textContent);
-    expect(titles).toEqual(["⚡ Quick · under 30 min", "🍲 Long · over an hour"]);
-    const groups = [...root.querySelectorAll(".level-group")];
-    expect([...groups[0].querySelectorAll(".card-title")].map((t) => t.textContent)).toEqual(["Cheese Omelette", "Chicken Rice"]);
-    expect([...groups[1].querySelectorAll(".card-title")].map((t) => t.textContent)).toEqual(["Slow Omelette"]);
+    expect(tabLabels()).toEqual(["⚡ Quick · 2", "🍳 Medium · 0", "🍲 Long · 1"]);
+    expect(selectedTab()).toBe("⚡ Quick · 2");
+  });
+
+  test("only the selected level's cards are shown, and tapping a tab switches", () => {
+    mount({ recipes: [slowOmelette, omelette, chickenRice] });
+    expect(names()).toEqual(["Cheese Omelette", "Chicken Rice"]);
+    tab("Long").click();
+    expect(names()).toEqual(["Slow Omelette"]);
+    expect(selectedTab()).toBe("🍲 Long · 1");
+  });
+
+  test("a level with no recipes is disabled and cannot be selected", () => {
+    mount({ recipes: [slowOmelette, omelette] });
+    expect(tab("Medium").disabled).toBe(true);
+    tab("Medium").click();
+    expect(selectedTab()).toBe("⚡ Quick · 1");
+  });
+
+  test("counts follow the filters, and the screen moves to a level that still has recipes", () => {
+    mount({ recipes: [omelette, slowStew] });
+    tab("Long").click();
+    expect(names()).toEqual(["Slow Pasta"]);
+    click(".filters button", "Ready to cook");
+    expect(tabLabels()).toEqual(["⚡ Quick · 1", "🍳 Medium · 0", "🍲 Long · 0"]);
+    expect(names()).toEqual(["Cheese Omelette"]);
+  });
+
+  test("starts on the remembered level and reports the user's choice", () => {
+    const onLevelChange = vi.fn<(level: string) => void>();
+    mount({ recipes: [omelette, slowOmelette], initialLevel: "long", onLevelChange });
+    expect(names()).toEqual(["Slow Omelette"]);
+    tab("Quick").click();
+    expect(onLevelChange).toHaveBeenCalledWith("quick");
+  });
+
+  test("an empty remembered level falls back to one with recipes", () => {
+    mount({ recipes: [omelette], initialLevel: "long" });
+    expect(selectedTab()).toBe("⚡ Quick · 1");
   });
 
   test("each card shows its estimated time", () => {
@@ -105,11 +142,9 @@ describe("effort levels", () => {
     expect(cards()[0].querySelector(".time")!.textContent).toBe("~10 min");
   });
 
-  test("filters apply across groups and a group with no visible cards disappears", () => {
-    mount({ recipes: [omelette, slowStew] });
-    click(".filters button", "Ready to cook");
-    expect([...root.querySelectorAll(".level-title")].map((t) => t.textContent)).toEqual(["⚡ Quick · under 30 min"]);
-    expect(names()).toEqual(["Cheese Omelette"]);
+  test("the selected level is explained under the tabs", () => {
+    mount({ recipes: [omelette] });
+    expect(root.querySelector(".level-range")!.textContent).toBe("Under 30 min");
   });
 });
 

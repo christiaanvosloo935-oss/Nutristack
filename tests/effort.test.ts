@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { estimateEffort, formatMinutes, groupByEffort, levelForMinutes } from "../src/effort";
+import { estimateEffort, formatMinutes, groupByEffort, levelForMinutes, pickLevel } from "../src/effort";
 import type { Match } from "../src/types";
 import { recipe } from "./fixtures/recipes";
 
@@ -93,5 +93,23 @@ describe("groupByEffort", () => {
     expect(groups.map((g) => g.level)).toEqual(["quick", "medium", "long"]);
     expect(groups[0].matches.map((m) => m.recipe.id)).toEqual(["2", "3"]);
     expect(groupByEffort([match("2", "Fry for 5 minutes.")]).map((g) => g.level)).toEqual(["quick"]);
+  });
+});
+
+describe("pickLevel", () => {
+  const counts = (quick: number, medium: number, long: number) => ({ quick, medium, long });
+  test("keeps the preferred level when it has recipes", () => {
+    expect(pickLevel("long", counts(3, 2, 1))).toBe("long");
+  });
+  test("without a preference, picks the quickest level that has recipes", () => {
+    expect(pickLevel(null, counts(0, 2, 1))).toBe("medium");
+  });
+  test("moves to the nearest level when the preferred one is empty", () => {
+    expect(pickLevel("long", counts(3, 2, 0))).toBe("medium");
+    expect(pickLevel("quick", counts(0, 0, 4))).toBe("long");
+    expect(pickLevel("medium", counts(2, 0, 2))).toBe("quick");
+  });
+  test("returns null when everything is empty", () => {
+    expect(pickLevel("quick", counts(0, 0, 0))).toBeNull();
   });
 });
