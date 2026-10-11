@@ -109,3 +109,51 @@ button.find, button.primary {
   font-size: 1.05rem;
 }
 button.find:disabled { opacity: 0.45; cursor: default; }
+
+.back { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; }
+.notice { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--muted); }
+.empty { color: var(--muted); padding: 24px 4px; }
+
+.filters, .categories { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; margin: 8px 0; scrollbar-width: none; }
+.filters button, .categories button {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.filters button[aria-pressed="true"], .categories button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
+.card {
+  padding: 0;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--border); display: block; }
+.card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.card-title { font-weight: 600; font-size: 0.95rem; }
+.badge { align-self: flex-start; font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; color: #fff; }
+.badge.ready { background: var(--ready); }
+.badge.missing { background: var(--warn); }
+.need { font-size: 0.82rem; color: var(--muted); }
+
+.ai-section { margin-top: 32px; }
+.ai-section .primary { margin-bottom: 12px; }
+.ai-section .highlight { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); }
+.ai-section button:disabled { opacity: 0.6; }
+.ai-error { color: var(--warn); font-weight: 600; }
+.ai-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; }
+.ai-card summary { cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-height: 44px; justify-content: center; }
+.ai-label { font-size: 0.78rem; color: var(--muted); }
+.ai-more { width: 100%; min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
