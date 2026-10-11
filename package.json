@@ -13,6 +13,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261011.1",
     "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
     "typescript": "^7.0.2",

@@ -1,0 +1,14 @@
+{
+  "name": "Nutristack",
+  "short_name": "Nutristack",
+  "description": "Add what's in your fridge and get recipes you can cook.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffaf3",
+  "theme_color": "#e2672b",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
