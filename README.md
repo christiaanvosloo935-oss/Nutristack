@@ -26,7 +26,7 @@ npm run build
 npx wrangler pages dev dist
 ```
 
-Get a free key at <https://aistudio.google.com/apikey> (no credit card).
+Get a free key at <https://aistudio.google.com/apikey> in a new project with no billing account (see the deploy steps).
 
 ### End-to-end test (phone-sized browser, network mocked)
 
@@ -39,10 +39,11 @@ npx playwright test
 
 1. Push this repo to GitHub, then in Cloudflare: Workers & Pages -> Create -> Pages -> connect the repo.
 2. Build command `npm run build`, output directory `dist`.
-3. Settings -> Environment variables -> add secret `GEMINI_API_KEY` (optional: `GEMINI_MODEL`, default `gemini-2.5-flash`).
-4. You get a free `*.pages.dev` address. Open it on a phone and use "Add to Home Screen".
+3. **Create the Gemini key safely:** at <https://aistudio.google.com/apikey> create the key in a **new project that has no billing account attached**. Check that AI Studio shows the project on the **Free tier**. A key from a Google Cloud project with billing turned on is charged at paid rates, and nothing in this app can stop that.
+4. Settings -> Environment variables -> add secret `GEMINI_API_KEY` (optional: `GEMINI_MODEL`, default `gemini-2.5-flash`).
+5. You get a free `*.pages.dev` address. Open it on a phone and use "Add to Home Screen".
 
-Everything here uses free plans with hard limits and no card on file. If a limit is hit the feature pauses (the AI section says "try again tomorrow"); nothing can bill you.
+Everything here uses free plans with hard limits and no card on file. If a limit is hit the feature pauses (the AI section says "try again tomorrow"). This holds as long as the Gemini key comes from a project without billing (step 3).
 
 ## Things to check yourself (limits change)
 

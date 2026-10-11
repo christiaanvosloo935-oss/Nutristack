@@ -21,6 +21,7 @@
     "src",
     "shared",
     "tests",
+    "build",
     "vite.config.ts"
   ]
 }

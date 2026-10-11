@@ -120,3 +120,16 @@ test("a slow library does not cover the home screen after the user went back", a
   await expect(page.getByRole("heading", { name: "What's in your fridge?" })).toBeVisible();
   await expect(page.locator(".grid .card")).toHaveCount(0);
 });
+
+test.describe("offline shell", () => {
+  test.use({ serviceWorkers: "allow" });
+
+  test("the app opens offline after one visit", async ({ page, context }) => {
+    await mockNetwork(page);
+    await page.goto("/");
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "What's in your fridge?" })).toBeVisible();
+  });
+});

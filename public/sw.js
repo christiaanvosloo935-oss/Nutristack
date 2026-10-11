@@ -1,9 +1,13 @@
 // Offline support: network-first for pages, cache-first for static files and dish photos.
 // API responses (TheMealDB JSON, /api/*) are never cached here; the recipe library lives in IndexedDB.
-const CACHE = "nutristack-v1";
+// The two placeholders below are filled in by the build (see build/precache.ts).
+const CACHE = "nutristack-__VERSION__";
+const PRECACHE = "__PRECACHE__";
+// Static hosts send "Vary: Origin"; ignoring it keeps precached files matching.
+const MATCH = { ignoreVary: true };
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.add("/")));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(Array.isArray(PRECACHE) ? PRECACHE : ["/"])));
   self.skipWaiting();
 });
 
@@ -32,10 +36,10 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin && !isMealPhoto) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).then((r) => remember(new Request("/"), r)).catch(() => caches.match("/")));
+    event.respondWith(fetch(request).then((r) => remember(new Request("/"), r)).catch(() => caches.match("/", MATCH)));
     return;
   }
   event.respondWith(
-    caches.match(request).then((hit) => hit || fetch(request).then((r) => remember(request, r))),
+    caches.match(request, MATCH).then((hit) => hit || fetch(request).then((r) => remember(request, r))),
   );
 });
