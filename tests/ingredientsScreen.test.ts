@@ -93,6 +93,12 @@ describe("ingredients screen", () => {
   });
 });
 
+describe("input limits", () => {
+  test("the add box limits entries to 40 characters", () => {
+    expect(input().maxLength).toBe(40);
+  });
+});
+
 describe("startRouter", () => {
   test("dispatches by hash with params and falls back to home", () => {
     const home = vi.fn();

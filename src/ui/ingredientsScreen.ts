@@ -14,6 +14,7 @@ export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab, onFi
     type: "search",
     placeholder: "Add a food, e.g. eggs",
     "aria-label": "Add an ingredient",
+    maxlength: "40",
     autocomplete: "off",
     autocapitalize: "none",
     enterkeyhint: "done",
