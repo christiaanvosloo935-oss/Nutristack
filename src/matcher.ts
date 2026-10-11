@@ -8,9 +8,19 @@ function words(name: string): string[] {
   return normalizeIngredient(name).split(" ").filter(Boolean);
 }
 
-/** A fridge item matches a recipe ingredient when all its words appear in the ingredient's words. */
+/** Extra words that turn an ingredient into a different product (rice vs rice vinegar). */
+const PRODUCT_CHANGERS = new Set(["stock", "broth", "vinegar", "sauce", "paste", "powder", "extract", "juice", "wine", "coconut", "cream"]);
+
+/**
+ * A fridge item matches a recipe ingredient when one's words are all contained in the other's
+ * (fridge "chicken breast" matches "Chicken", fridge "cheese" matches "Cheddar Cheese"),
+ * unless the extra words change the product ("Rice Vinegar", "Coconut Milk", "Chicken Stock").
+ */
 function fridgeItemMatches(fridgeWords: string[], ingredientWords: string[]): boolean {
-  return fridgeWords.length > 0 && fridgeWords.every((w) => ingredientWords.includes(w));
+  if (fridgeWords.length === 0 || ingredientWords.length === 0) return false;
+  const [small, large] = fridgeWords.length <= ingredientWords.length ? [fridgeWords, ingredientWords] : [ingredientWords, fridgeWords];
+  if (!small.every((w) => large.includes(w))) return false;
+  return !large.some((w) => !small.includes(w) && PRODUCT_CHANGERS.has(w));
 }
 
 function classify(fridgeItems: string[][], recipe: Recipe): Match {

@@ -20,9 +20,9 @@ describe("normalizeIngredient", () => {
 });
 
 describe("isStaple", () => {
-  test.each(["Salt", "Sea Salt", "Olive Oil", "Sesame Oil", "Water", "Boiling Water", "Black Pepper", "Sugar", "Plain Flour", "Butter"])(
+  test.each(["Salt", "Sea Salt", "Olive Oil", "Sesame Oil", "Water", "Boiling Water", "Black Pepper", "Sugar", "Plain Flour", "Butter", "Caster Sugar", "Brown Sugar", "Self-raising Flour", "Unsalted Butter", "Cornflour"])(
     "%s is a staple",
     (n) => expect(isStaple(n)).toBe(true),
   );
-  test.each(["Peanut Butter", "Chicken", "Tomato"])("%s is not a staple", (n) => expect(isStaple(n)).toBe(false));
+  test.each(["Peanut Butter", "Sugar Snap Peas", "Chicken", "Tomato"])("%s is not a staple", (n) => expect(isStaple(n)).toBe(false));
 });

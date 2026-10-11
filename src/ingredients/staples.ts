@@ -15,9 +15,14 @@ const EXACT_STAPLES = new Set([
   "flour",
   "plain flour",
   "butter",
+  "unsalted butter",
+  "salted butter",
+  "melted butter",
+  "softened butter",
+  "cornflour",
 ]);
 
-const STAPLE_LAST_WORDS = new Set(["salt", "oil", "water"]);
+const STAPLE_LAST_WORDS = new Set(["salt", "oil", "water", "sugar", "flour"]);
 
 export function isStaple(name: string): boolean {
   const n = normalizeIngredient(name);

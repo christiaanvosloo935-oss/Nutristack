@@ -37,9 +37,23 @@ describe("matchRecipes", () => {
     expect(m.have).toContain("Chicken Breast");
   });
 
-  test("a specific fridge item does not match a more general recipe ingredient", () => {
-    const r = recipe("9", "Plain Chicken", ["Chicken"]);
-    expect(matchRecipes(["chicken breast"], [r])).toEqual([]);
+  test("a specific fridge item matches a more general recipe ingredient", () => {
+    expect(matchRecipes(["chicken breast"], [recipe("9", "Plain Chicken", ["Chicken"])])).toHaveLength(1);
+    expect(matchRecipes(["cheddar cheese"], [recipe("8", "Toastie", ["Bread", "Cheese"])])).toHaveLength(1);
+  });
+
+  test.each([
+    ["rice", "Rice Vinegar"],
+    ["milk", "Coconut Milk"],
+    ["chicken", "Chicken Stock"],
+    ["tomato", "Tomato Paste"],
+    ["chicken stock", "Chicken"],
+  ])("fridge %j does not match the different product %j", (fridgeItem, ingredient) => {
+    expect(matchRecipes([fridgeItem], [recipe("7", "X", [ingredient])])).toEqual([]);
+  });
+
+  test("the same specific product still matches itself", () => {
+    expect(matchRecipes(["chicken stock"], [recipe("6", "Soup", ["Chicken Stock"])])).toHaveLength(1);
   });
 
   test("empty fridge returns no matches", () => {
