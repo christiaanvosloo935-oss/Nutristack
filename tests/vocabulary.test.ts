@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { QUICK_ADD, buildVocabulary, suggest } from "../src/ingredients/vocabulary";
+import { QUICK_ADD, QUICK_ADD_EMOJI, buildVocabulary, suggest } from "../src/ingredients/vocabulary";
 import { recipe } from "./fixtures/recipes";
 
 describe("buildVocabulary", () => {
@@ -35,4 +35,8 @@ describe("suggest", () => {
 
 test("QUICK_ADD lists common student foods", () => {
   expect(QUICK_ADD).toEqual(["eggs", "rice", "pasta", "onion", "tomato", "cheese", "potato", "chicken", "garlic", "milk", "bread", "carrot"]);
+});
+
+test("every quick-add food has an emoji", () => {
+  for (const food of QUICK_ADD) expect(QUICK_ADD_EMOJI[food], food).toMatch(/\p{Extended_Pictographic}/u);
 });

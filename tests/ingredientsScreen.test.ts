@@ -96,6 +96,15 @@ describe("ingredients screen", () => {
   });
 });
 
+describe("quick-add tiles", () => {
+  test("each tile shows an emoji icon above its label", () => {
+    const tiles = [...root.querySelectorAll(".quick-add button.tile")];
+    expect(tiles).toHaveLength(12);
+    expect(tiles[0].querySelector(".tile-icon")!.getAttribute("data-emoji")).toBe("🥚");
+    expect(tiles[0].querySelector(".tile-label")!.textContent).toBe("eggs");
+  });
+});
+
 describe("setVocab", () => {
   test("updates suggestions without rebuilding the input or losing typed text", () => {
     mount([]);

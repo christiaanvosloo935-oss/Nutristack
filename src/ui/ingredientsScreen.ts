@@ -1,5 +1,5 @@
 import type { createFridge } from "../fridge";
-import { QUICK_ADD, suggest } from "../ingredients/vocabulary";
+import { QUICK_ADD, QUICK_ADD_EMOJI, suggest } from "../ingredients/vocabulary";
 import { normalizeIngredient } from "../ingredients/normalize";
 import { claimRoot, h } from "./dom";
 
@@ -7,6 +7,22 @@ export interface IngredientsDeps {
   fridge: ReturnType<typeof createFridge>;
   vocab: string[];
   onFind: () => void;
+}
+
+const TONES = ["cream", "sage", "sand", "taupe"];
+
+// Static markup (no user data): a soft hills-and-sun picture, drawn inline so it works offline.
+const WIDGET_ART = `<svg class="widget-art" viewBox="0 0 200 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <circle class="sun" cx="165" cy="26" r="11"/>
+  <path class="hill hill-1" d="M0 62 C30 38 62 40 95 58 S150 44 200 56 V110 H0Z"/>
+  <path class="hill hill-2" d="M0 78 C40 54 80 62 120 74 S180 62 200 70 V110 H0Z"/>
+  <path class="hill hill-3" d="M0 94 C50 80 90 84 130 91 S180 88 200 92 V110 H0Z"/>
+</svg>`;
+
+function widget(): HTMLElement {
+  const section = h("section", { class: "widget" }, h("p", { class: "widget-text" }, "Good meals start", h("br"), "with what you have"));
+  section.insertAdjacentHTML("beforeend", WIDGET_ART);
+  return section;
 }
 
 export interface IngredientsScreen {
@@ -53,9 +69,16 @@ export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab: init
 
     const have = new Set(items.map(normalizeIngredient));
     quickAdd.replaceChildren(
-      ...QUICK_ADD.filter((q) => !have.has(normalizeIngredient(q))).map((q) =>
-        h("button", { class: "chip quick", type: "button", onclick: () => add(q) }, q),
-      ),
+      ...QUICK_ADD.map((q, i) => ({ q, tone: TONES[(i + Math.floor(i / 4)) % TONES.length] }))
+        .filter(({ q }) => !have.has(normalizeIngredient(q)))
+        .map(({ q, tone }) =>
+          h(
+            "button",
+            { class: `tile ${tone}`, type: "button", onclick: () => add(q) },
+            h("span", { class: "tile-icon", "data-emoji": QUICK_ADD_EMOJI[q] ?? "🍽️", "aria-hidden": "true" }),
+            h("span", { class: "tile-label" }, q),
+          ),
+        ),
     );
 
     suggestions.replaceChildren(
@@ -85,8 +108,9 @@ export function renderIngredientsScreen(root: HTMLElement, { fridge, vocab: init
     h(
       "main",
       { class: "screen ingredients" },
+      widget(),
       h("h1", {}, "What's in your fridge?"),
-      h("p", { class: "hint" }, "Salt, oil and water are assumed. No need to add them."),
+      h("p", { class: "hint" }, "Salt, pepper, oil, water, sugar, flour and butter are assumed. No need to add them."),
       form,
       suggestions,
       chips,

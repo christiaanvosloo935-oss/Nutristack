@@ -17,6 +17,21 @@ export const QUICK_ADD = [
   "carrot",
 ];
 
+export const QUICK_ADD_EMOJI: Record<string, string> = {
+  eggs: "🥚",
+  rice: "🍚",
+  pasta: "🍝",
+  onion: "🧅",
+  tomato: "🍅",
+  cheese: "🧀",
+  potato: "🥔",
+  chicken: "🍗",
+  garlic: "🧄",
+  milk: "🥛",
+  bread: "🍞",
+  carrot: "🥕",
+};
+
 export function buildVocabulary(recipes: Recipe[]): string[] {
   const names = new Set<string>();
   for (const recipe of recipes) {
