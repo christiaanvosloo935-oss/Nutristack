@@ -157,3 +157,10 @@ button.find:disabled { opacity: 0.45; cursor: default; }
 .ai-card summary { cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-height: 44px; justify-content: center; }
 .ai-label { font-size: 0.78rem; color: var(--muted); }
 .ai-more { width: 100%; min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+
+.detail .back { border: 0; background: transparent; padding: 0; font: inherit; }
+.detail .hero { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--border); display: block; margin-top: 8px; }
+.detail ul, .detail ol { padding-left: 22px; margin: 0; }
+.detail li { margin: 6px 0; }
+.detail .staples h2 { color: var(--muted); }
+.detail .source { display: inline-flex; align-items: center; min-height: 44px; margin-top: 18px; color: var(--accent); font-weight: 600; }

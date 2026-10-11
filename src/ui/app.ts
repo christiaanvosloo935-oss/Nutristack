@@ -6,6 +6,8 @@ import { createIdbCache } from "../library/cache";
 import { fetchAllMeals } from "../library/mealdb";
 import type { Recipe } from "../types";
 import { h } from "./dom";
+import { matchOne } from "../matcher";
+import { renderDetailScreen } from "./detailScreen";
 import { renderIngredientsScreen } from "./ingredientsScreen";
 import { renderResultsScreen } from "./resultsScreen";
 import { startRouter } from "./router";
@@ -79,5 +81,19 @@ export function startApp(root: HTMLElement): void {
       });
   };
 
-  startRouter({ "": showHome, results: showResults });
+  const showRecipe = ([id]: string[]) => {
+    library
+      .then(({ recipes }) => {
+        const recipe = recipes.find((r) => r.id === id);
+        if (!recipe) {
+          window.location.hash = "#/results";
+          return;
+        }
+        renderDetailScreen(root, matchOne(fridge.list(), recipe), () => window.history.back());
+        window.scrollTo(0, 0);
+      })
+      .catch(showError);
+  };
+
+  startRouter({ "": showHome, results: showResults, recipe: showRecipe });
 }

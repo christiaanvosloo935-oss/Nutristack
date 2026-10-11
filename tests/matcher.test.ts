@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { matchRecipes } from "../src/matcher";
+import { matchOne, matchRecipes } from "../src/matcher";
 import { bigStew, chickenRice, omelette, recipe, saltWater, tomatoPasta } from "./fixtures/recipes";
 
 const all = [omelette, tomatoPasta, chickenRice, saltWater, bigStew];
@@ -51,5 +51,13 @@ describe("matchRecipes", () => {
     const banana = recipe("b", "Banana Dish", ["Egg", "Milk"]);
     const ids = matchRecipes(["egg", "milk", "cheese", "pasta", "tomato", "garlic"], [banana, omelette, tomatoPasta, apple]).map((m) => m.recipe.id);
     expect(ids).toEqual(["2", "a", "b", "1"]);
+  });
+});
+
+describe("matchOne", () => {
+  test("classifies any recipe without applying the missing cutoff", () => {
+    const m = matchOne(["beef"], bigStew);
+    expect(m.have).toEqual(["Beef"]);
+    expect(m.missing).toEqual(["Carrots", "Potatoes", "Leek", "Celery", "Thyme"]);
   });
 });
