@@ -27,6 +27,10 @@ describe("recipe detail", () => {
     expect(root.querySelector("h1")!.textContent).toBe("Cheese Omelette");
   });
 
+  test("shows the estimated time and effort level", () => {
+    expect(root.querySelector(".effort")!.textContent).toBe("~15 min · Quick (estimated)");
+  });
+
   test("lists have / need / staples with measures, staples only under 'also need'", () => {
     expect(items(".have")).toEqual(["1 Eggs"]);
     expect(items(".missing")).toEqual(["1 Cheese"]);

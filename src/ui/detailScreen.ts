@@ -1,4 +1,5 @@
 import type { Match, RecipeIngredient } from "../types";
+import { EFFORT_LEVELS, estimateEffort, formatMinutes } from "../effort";
 import { h } from "./dom";
 
 function group(className: string, title: string, names: string[], recipeIngredients: RecipeIngredient[]): HTMLElement | false {
@@ -18,6 +19,8 @@ export function renderDetailScreen(root: HTMLElement, match: Match, onBack: () =
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+  const effort = estimateEffort(recipe);
+  const effortTitle = EFFORT_LEVELS.find((l) => l.level === effort.level)!.title;
   const hasSource = recipe.source !== undefined && /^https?:\/\//i.test(recipe.source);
 
   root.replaceChildren(
@@ -28,6 +31,7 @@ export function renderDetailScreen(root: HTMLElement, match: Match, onBack: () =
       h("img", { class: "hero", src: recipe.thumb, alt: recipe.name }),
       h("h1", {}, recipe.name),
       h("p", { class: "hint" }, [recipe.category, recipe.area].filter(Boolean).join(" · ")),
+      h("p", { class: "effort" }, `${formatMinutes(effort.minutes)} · ${effortTitle} (estimated)`),
       group("have", "You have", match.have, recipe.ingredients),
       group("missing", "You need to get", match.missing, recipe.ingredients),
       group("staples", "You'll also need", match.staples, recipe.ingredients),

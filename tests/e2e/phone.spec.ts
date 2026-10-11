@@ -5,14 +5,14 @@ const PNG = Buffer.from(
   "base64",
 );
 
-function meal(id: number, name: string, category: string, ingredients: string[]) {
+function meal(id: number, name: string, category: string, ingredients: string[], instructions = "Mix everything.\r\n\r\nCook until done.") {
   const raw: Record<string, string | null> = {
     idMeal: String(id),
     strMeal: name,
     strCategory: category,
     strArea: "Test",
     strMealThumb: `https://www.themealdb.com/images/media/meals/test-${id}.jpg`,
-    strInstructions: "Mix everything.\r\n\r\nCook until done.",
+    strInstructions: instructions,
     strSource: "https://example.com/recipe",
   };
   for (let i = 1; i <= 20; i++) {
@@ -26,6 +26,7 @@ const meals = [
   meal(1, "Cheese Omelette", "Breakfast", ["Eggs", "Cheese", "Butter", "Salt"]),
   meal(2, "Tomato Pasta", "Pasta", ["Pasta", "Tomatoes", "Garlic", "Olive Oil"]),
   meal(3, "Chicken Rice", "Chicken", ["Chicken Breast", "Rice", "Onion", "Soy Sauce"]),
+  meal(4, "Slow Tomato Bake", "Vegetarian", ["Tomatoes", "Cheese", "Garlic"], "Layer everything. Bake for 2 hours."),
 ];
 
 const aiRecipes = [1, 2, 3].map((n) => ({
@@ -67,6 +68,9 @@ test("add food, find recipes, open one, and get AI ideas", async ({ page }) => {
   await expect(firstCard).toBeVisible();
   await expect(firstCard.locator("img")).toHaveAttribute("src", /test-1\.jpg/);
   await expect(firstCard.locator(".badge")).toHaveText("2/2 ingredients");
+  await expect(firstCard.locator(".time")).toContainText("min");
+  await expect(page.locator(".level-title").first()).toContainText("Quick");
+  await expect(page.locator(".level-title").last()).toContainText("Long");
   await page.screenshot({ path: "docs/screenshots/2-results.png", fullPage: true });
   await noHorizontalScroll(page);
 

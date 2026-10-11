@@ -293,3 +293,11 @@ button.find:disabled { opacity: 0.5; cursor: default; }
 .detail li { margin: 6px 0; }
 .detail .staples h2 { color: var(--taupe); }
 .detail .source { display: inline-flex; align-items: center; min-height: 44px; margin-top: 18px; color: var(--sage-strong); font-weight: 500; }
+
+/* Effort levels */
+.level-group { margin-top: 6px; }
+.level-title { margin: 22px 2px 4px; }
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.time { font-size: 0.78rem; color: var(--muted); }
+.ai-time { font-size: 0.78rem; color: var(--taupe); }
+.detail .effort { margin: -8px 0 4px; color: var(--taupe); font-size: 0.9rem; }

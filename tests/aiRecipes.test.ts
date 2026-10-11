@@ -64,6 +64,19 @@ describe("parseAiResponse", () => {
   });
 });
 
+describe("parseAiResponse minutes", () => {
+  const one = (extra: object) => parseAiResponse(JSON.stringify({ recipes: [{ ...recipeJson(1), ...extra }] }))[0];
+  test("keeps a sensible number of minutes", () => {
+    expect(one({ minutes: 25 }).minutes).toBe(25);
+  });
+  test.each([[0], [-5], [1000], ["20"], [null], [12.5]])("drops an unusable value %j", (value) => {
+    expect(one({ minutes: value }).minutes).toBeUndefined();
+  });
+  test("the prompt asks for a total time in minutes", () => {
+    expect(buildPrompt(["egg"]).toLowerCase()).toContain("minutes");
+  });
+});
+
 describe("callGemini", () => {
   const ok = (text: string) => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }) }) as Response;
   const status = (code: number) => ({ ok: false, status: code, json: async () => ({}) }) as Response;

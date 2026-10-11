@@ -5,7 +5,7 @@ import { renderResultsScreen } from "../src/ui/resultsScreen";
 import type { AiRecipe } from "../src/types";
 import { chickenRice, omelette, tomatoPasta } from "./fixtures/recipes";
 
-const aiRecipes: AiRecipe[] = [1, 2, 3].map((n) => ({ title: `AI Dish ${n}`, description: "d", ingredients: ["egg"], steps: ["Cook."] }));
+const aiRecipes: AiRecipe[] = [1, 2, 3].map((n) => ({ title: `AI Dish ${n}`, description: "d", ingredients: ["egg"], steps: ["Cook."], minutes: 20 }));
 
 let root: HTMLElement;
 let fetchAi: ReturnType<typeof vi.fn<(ing: string[]) => Promise<AiRecipe[]>>>;
@@ -87,6 +87,32 @@ describe("real recipes", () => {
   });
 });
 
+describe("effort levels", () => {
+  const slowOmelette = { ...omelette, id: "11", name: "Slow Omelette", instructions: "Cook gently for 3 hours." };
+  const slowStew = { ...tomatoPasta, id: "12", name: "Slow Pasta", instructions: "Simmer for 3 hours." };
+
+  test("groups cards under Quick / Medium / Long headings, quickest first, empty levels hidden", () => {
+    mount({ recipes: [slowOmelette, omelette, chickenRice] });
+    const titles = [...root.querySelectorAll(".level-title")].map((t) => t.textContent);
+    expect(titles).toEqual(["⚡ Quick · under 30 min", "🍲 Long · over an hour"]);
+    const groups = [...root.querySelectorAll(".level-group")];
+    expect([...groups[0].querySelectorAll(".card-title")].map((t) => t.textContent)).toEqual(["Cheese Omelette", "Chicken Rice"]);
+    expect([...groups[1].querySelectorAll(".card-title")].map((t) => t.textContent)).toEqual(["Slow Omelette"]);
+  });
+
+  test("each card shows its estimated time", () => {
+    mount({ recipes: [omelette] });
+    expect(cards()[0].querySelector(".time")!.textContent).toBe("~10 min");
+  });
+
+  test("filters apply across groups and a group with no visible cards disappears", () => {
+    mount({ recipes: [omelette, slowStew] });
+    click(".filters button", "Ready to cook");
+    expect([...root.querySelectorAll(".level-title")].map((t) => t.textContent)).toEqual(["⚡ Quick · under 30 min"]);
+    expect(names()).toEqual(["Cheese Omelette"]);
+  });
+});
+
 describe("AI section", () => {
   test("does not call the AI until the button is tapped", () => {
     mount();
@@ -102,6 +128,13 @@ describe("AI section", () => {
     for (const card of root.querySelectorAll(".ai-card")) {
       expect(card.querySelector(".ai-label")!.textContent).toBe("AI suggestion, not kitchen-tested");
     }
+  });
+
+  test("AI cards show their time when given", async () => {
+    mount();
+    click(".ai-suggest");
+    await vi.waitFor(() => expect(root.querySelectorAll(".ai-card")).toHaveLength(3));
+    expect(root.querySelector(".ai-time")!.textContent).toBe("~20 min");
   });
 
   test("Give me 3 more appends another batch", async () => {

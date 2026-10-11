@@ -4,6 +4,7 @@ Add what's in your fridge, get recipes you can cook. Built for students and peop
 
 - **Real recipes with photos** from [TheMealDB](https://www.themealdb.com). The whole library is downloaded once (26 small requests), cached on the phone, and matched on-device, so there are no search limits.
 - **Match badges**: "ready to cook" or "missing 1-2". Salt, oil, water and similar staples are assumed and listed as "You'll also need".
+- **Effort levels**: recipes are grouped as Quick (under 30 min), Medium (30-60 min) and Long (over an hour). TheMealDB has no cooking times, so the app estimates them from the durations written in the instructions plus prep time (see `src/effort.ts`). AI recipes include a total time from the model.
 - **AI recipe ideas** in a separate, clearly labelled section (Gemini free tier), only when you tap the button.
 - No accounts. Your fridge list is stored on your phone.
 

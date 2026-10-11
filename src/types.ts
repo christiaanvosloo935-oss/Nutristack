@@ -27,4 +27,6 @@ export interface AiRecipe {
   ingredients: string[];
   steps: string[];
   basedOn?: string;
+  /** Estimated total time (prep + cooking) in minutes, when the model gave a usable value. */
+  minutes?: number;
 }

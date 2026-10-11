@@ -1,4 +1,5 @@
 import { AiQuotaError } from "../../shared/aiRecipes";
+import { EFFORT_LEVELS, estimateEffort, formatMinutes, groupByEffort } from "../effort";
 import { matchRecipes } from "../matcher";
 import type { AiRecipe, Match, Recipe } from "../types";
 import { claimRoot, h } from "./dom";
@@ -30,7 +31,12 @@ function matchCard(m: Match, onOpen: (id: string) => void): HTMLElement {
       "div",
       { class: "card-body" },
       h("div", { class: "card-title" }, m.recipe.name),
-      h("span", { class: `badge ${ready ? "ready" : "missing"}` }, `${m.have.length}/${total} ingredients`),
+      h(
+        "div",
+        { class: "card-meta" },
+        h("span", { class: `badge ${ready ? "ready" : "missing"}` }, `${m.have.length}/${total} ingredients`),
+        h("span", { class: "time" }, formatMinutes(estimateEffort(m.recipe).minutes)),
+      ),
       !ready && h("div", { class: "need" }, `Need: ${m.missing.join(", ")}`),
     ),
   );
@@ -40,7 +46,13 @@ function aiCard(r: AiRecipe): HTMLElement {
   return h(
     "details",
     { class: "ai-card" },
-    h("summary", {}, h("strong", {}, r.title), h("span", { class: "ai-label" }, "AI suggestion, not kitchen-tested")),
+    h(
+      "summary",
+      {},
+      h("strong", {}, r.title),
+      h("span", { class: "ai-label" }, "AI suggestion, not kitchen-tested"),
+      r.minutes !== undefined && h("span", { class: "ai-time" }, formatMinutes(r.minutes)),
+    ),
     r.description && h("p", {}, r.description),
     r.basedOn && h("p", { class: "hint" }, `Based on: ${r.basedOn}`),
     h("h3", {}, "Ingredients"),
@@ -148,7 +160,19 @@ export function renderResultsScreen(root: HTMLElement, deps: ResultsDeps): void 
           ? h("p", { class: "empty" }, "No recipes match yet. Add more food, or try the AI ideas below.")
           : list.length === 0
             ? h("p", { class: "empty" }, "Nothing matches these filters.")
-            : h("div", { class: "grid" }, ...list.map((m) => matchCard(m, onOpen))),
+            : h(
+                "div",
+                { class: "levels" },
+                ...groupByEffort(list).map(({ level, matches: group }) => {
+                  const meta = EFFORT_LEVELS.find((l) => l.level === level)!;
+                  return h(
+                    "section",
+                    { class: "level-group" },
+                    h("h2", { class: "level-title" }, `${meta.emoji} ${meta.title} · ${meta.range}`),
+                    h("div", { class: "grid" }, ...group.map((m) => matchCard(m, onOpen))),
+                  );
+                }),
+              ),
         aiSection(),
       ),
     );
